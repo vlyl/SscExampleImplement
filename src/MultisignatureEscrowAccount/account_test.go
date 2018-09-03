@@ -1,4 +1,4 @@
-package account
+package MultisignatureEscrowAccount
 
 import (
 	"context"
@@ -12,18 +12,18 @@ import (
 )
 
 func TestMultisignatureEscrowAccount(t *testing.T) {
-	// source account
+	// source MultisignatureEscrowAccount
 	seed := "SBMSM5WYMB4ULOL72FRLZTGHEJ3SPXUFASKGWXB7DOSFLJMBBKFEOAKI"
 	a := NewAccount(seed)
 	sa := SourceAccount{a}
 
-	// destination account
+	// destination MultisignatureEscrowAccount
 	seed = "SDEDX4OS5KFPAYIBYD77IKJRZ6UNV7DFZZ4XFJQH6ENTF5PFNT6AGXYJ"
 	a = NewAccount(seed)
 	da := DestinationAccount{a}
 
 	// sequence number
-	// N, M - sequence number of escrow account and source account
+	// N, M - sequence number of escrow MultisignatureEscrowAccount and source MultisignatureEscrowAccount
 	seqM := SequenceIncrement(sa.GetSequence())
 	// T - the lock-up period
 	// D - the date upon which the lock-up period starts
@@ -45,19 +45,19 @@ func TestMultisignatureEscrowAccount(t *testing.T) {
 
 	/// Tx3: UnlockPreBuild
 	txUnlock := ea.UnlockPreBuild(MinuteLater(time.Now()), SequenceIncrement(seqN))
-	// sign tx3(txUnlock) with escrow account
+	// sign tx3(txUnlock) with escrow MultisignatureEscrowAccount
 	txeUnlock := ea.SignTx(txUnlock)
-	// sign tx3(txUnlock) with destination account
+	// sign tx3(txUnlock) with destination MultisignatureEscrowAccount
 	da.SignTxe(&txeUnlock)
 
 	/// Tx4: RecoveryPreBuild
 	txRecovery := ea.RecoveryPreBuild(da, SequenceIncrement(seqN))
-	// sign tx4(txRecovery) with escrow account
+	// sign tx4(txRecovery) with escrow MultisignatureEscrowAccount
 	txeRecovery := ea.SignTx(txRecovery)
-	// sign tx4(txRecovery) with destination account
+	// sign tx4(txRecovery) with destination MultisignatureEscrowAccount
 	da.SignTxe(&txeRecovery)
 
-	// Tx5: Funding to escrow account
+	// Tx5: Funding to escrow MultisignatureEscrowAccount
 	sa.Funding(ea, SequenceIncrement(seqM))
 
 	escrow, err := horizon.DefaultTestNetClient.LoadAccount(ea.Address())

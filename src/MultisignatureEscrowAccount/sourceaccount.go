@@ -1,4 +1,4 @@
-package account
+package MultisignatureEscrowAccount
 
 import (
 	"github.com/stellar/go/build"
@@ -49,7 +49,7 @@ func (sa *SourceAccount) Funding(ea EscrowAccount, seq build.Sequence) {
 		seq,
 		build.TestNetwork,
 		build.Payment(build.Destination{ea.Address()}, build.NativeAmount{fundingBalance}),
-		build.MemoText{"funding escrow account"},
+		build.MemoText{"funding escrow MultisignatureEscrowAccount"},
 	)
 	PanicIfError(err)
 

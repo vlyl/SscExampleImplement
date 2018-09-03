@@ -1,4 +1,4 @@
-package account
+package MultisignatureEscrowAccount
 
 import (
 	"log"
