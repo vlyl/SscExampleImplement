@@ -10,16 +10,17 @@ type EscrowAccount struct {
 	Account
 }
 
-func (ea *EscrowAccount) EnableMultiSig(da DestinationAccount, seq build.Sequence) {
+func (ea *EscrowAccount) AddSigner(da DestinationAccount, seq build.Sequence) {
 	tx, err := build.Transaction(
 		build.SourceAccount{AddressOrSeed: ea.Address()},
 		seq,
 		build.TestNetwork,
-		build.SetOptions(build.Signer{da.Address(),1}),
+		build.SetOptions(build.Signer{da.Address(), 1}),
 		build.SetOptions(
 			build.MasterWeight(1),
 			build.SetThresholds(2, 2, 2),
 		),
+		build.MemoText{"Add signer"},
 	)
 	if err != nil {
 		log.Print(err)
@@ -46,12 +47,10 @@ func (ea *EscrowAccount) UnlockPreBuild(tm uint64, seq build.Sequence) (tx *buil
 		build.SourceAccount{AddressOrSeed: ea.Address()},
 		seq,
 		build.TestNetwork,
-		build.Timebounds{MaxTime:tm, MinTime:0},
-		build.SetOptions(
-			build.MasterWeight(1),
-			build.SetThresholds(1, 1, 1),
-			),
-		)
+		build.Timebounds{MaxTime: tm, MinTime: 0},
+		build.SetOptions(build.MasterWeight(0), build.SetThresholds(1, 1, 1)),
+		build.MemoText{"Unlock Pre Build"},
+	)
 	PanicIfError(err)
 	return
 }
@@ -61,9 +60,7 @@ func (ea *EscrowAccount) RecoveryPreBuild(da DestinationAccount, seq build.Seque
 		build.SourceAccount{AddressOrSeed: ea.Address()},
 		seq,
 		build.TestNetwork,
-		build.SetOptions(
-			build.Signer{Address: da.Address(), Weight: 0},
-		),
+		build.SetOptions(build.RemoveSigner(da.Address())),
 		build.SetOptions(
 			build.MasterWeight(1),
 			build.SetThresholds(1, 1, 1),

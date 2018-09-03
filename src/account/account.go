@@ -9,12 +9,12 @@ import (
 	"github.com/stellar/go/clients/horizon"
 )
 
-type Account struct{
+type Account struct {
 	seed string
 }
 
 func NewAccount(seed string) (a Account) {
-	return Account{seed:seed}
+	return Account{seed: seed}
 }
 
 func (a *Account) Address() string {
@@ -42,7 +42,7 @@ func (a *Account) SignTx(tx *build.TransactionBuilder) (txe build.TransactionEnv
 }
 
 func (a *Account) SignTxe(txe *build.TransactionEnvelopeBuilder) {
-	txe.Mutate(build.Sign{Seed:a.seed})
+	txe.Mutate(build.Sign{Seed: a.seed})
 }
 
 func SubmitTxe(txe build.TransactionEnvelopeBuilder) (txHash string, err error) {
@@ -66,6 +66,21 @@ func (a *Account) GetSequence() build.Sequence {
 func SequenceIncrement(seq build.Sequence) build.Sequence {
 	ns := seq.Sequence + 1
 	return build.Sequence{Sequence: ns}
+}
+
+func (a *Account) PayTx(destination Account, nativeAmount string) error {
+	tx, err := build.Transaction(
+		build.SourceAccount{a.Address()},
+		build.AutoSequence{SequenceProvider: horizon.DefaultTestNetClient},
+		build.TestNetwork,
+		build.Payment(
+			build.Destination{destination.Address()},
+			build.NativeAmount{nativeAmount}))
+	PanicIfError(err)
+
+	txHash, err := a.SignAndSubmit(tx)
+	log.Print(txHash)
+	return err
 }
 
 func GetResultCodeFromError(err error) string {

@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+const fundingBalance string = "100"
+
 type SourceAccount struct {
 	Account
 }
@@ -23,8 +25,9 @@ func (sa *SourceAccount) CreateEscrowAccount(startingBalance string, seq build.S
 		build.TestNetwork,
 		build.CreateAccount(
 			build.Destination{AddressOrSeed: full.Address()},
-			build.Amount(startingBalance),
+			build.NativeAmount{startingBalance},
 		),
+		build.MemoText{"Create escrow"},
 	)
 	if err != nil {
 		log.Print(err)
@@ -40,12 +43,13 @@ func (sa *SourceAccount) CreateEscrowAccount(startingBalance string, seq build.S
 	return EscrowAccount{NewAccount(full.Seed())}
 }
 
-func (sa *SourceAccount) Funding(da DestinationAccount, seq build.Sequence) {
+func (sa *SourceAccount) Funding(ea EscrowAccount, seq build.Sequence) {
 	tx, err := build.Transaction(
 		build.SourceAccount{AddressOrSeed: sa.Address()},
 		seq,
 		build.TestNetwork,
-		build.Payment(build.NativeAsset(), build.NativeAmount{"1000"}),
+		build.Payment(build.Destination{ea.Address()}, build.NativeAmount{fundingBalance}),
+		build.MemoText{"funding escrow account"},
 	)
 	PanicIfError(err)
 
