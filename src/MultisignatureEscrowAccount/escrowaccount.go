@@ -47,7 +47,7 @@ func (ea *EscrowAccount) UnlockPreBuild(tm uint64, seq build.Sequence) (tx *buil
 		build.SourceAccount{AddressOrSeed: ea.Address()},
 		seq,
 		build.TestNetwork,
-		build.Timebounds{MaxTime: tm, MinTime: 0},
+		build.Timebounds{MaxTime: 0, MinTime: tm},
 		build.SetOptions(build.MasterWeight(0), build.SetThresholds(1, 1, 1)),
 		build.MemoText{"Unlock Pre Build"},
 	)

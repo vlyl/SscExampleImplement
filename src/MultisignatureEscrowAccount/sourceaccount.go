@@ -49,7 +49,7 @@ func (sa *SourceAccount) Funding(ea EscrowAccount, seq build.Sequence) {
 		seq,
 		build.TestNetwork,
 		build.Payment(build.Destination{ea.Address()}, build.NativeAmount{fundingBalance}),
-		build.MemoText{"funding escrow MultisignatureEscrowAccount"},
+		build.MemoText{"funding escrow"},
 	)
 	PanicIfError(err)
 

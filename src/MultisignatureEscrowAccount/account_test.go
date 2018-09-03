@@ -67,7 +67,7 @@ func TestMultisignatureEscrowAccount(t *testing.T) {
 	log.Print(string(eb))
 
 	log.Println("sleeping S...")
-	time.Sleep(time.Minute / 2)
+	time.Sleep(time.Minute)
 
 	log.Println("submit unlock tx")
 	txHash, err := SubmitTxe(txeUnlock)
