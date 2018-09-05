@@ -83,6 +83,51 @@ func (a *Account) PayTx(destination Account, nativeAmount string) error {
 	return err
 }
 
+func (a *Account) CreateNewAccount(startingBalance string, seq build.Sequence) (na Account, err error) {
+	full, err := keypair.Random()
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+
+	tx, err := build.Transaction(
+		build.SourceAccount{AddressOrSeed: a.Address()},
+		seq,
+		build.TestNetwork,
+		build.CreateAccount(
+			build.Destination{AddressOrSeed: full.Address()},
+			build.NativeAmount{Amount: startingBalance},
+		),
+		build.MemoText{Value: "Create escrow"},
+	)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	_, err = a.SignAndSubmit(tx)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	return NewAccount(full.Seed()), nil
+}
+
+func (a *Account) TrustAsset(ast build.Asset) error {
+	tx, err := build.Transaction(
+		build.SourceAccount{AddressOrSeed: a.Address()},
+		build.AutoSequence{SequenceProvider: horizon.DefaultTestNetClient},
+		build.TestNetwork,
+		build.Trust(ast.Code, ast.Issuer))
+	if err != nil {
+		return err
+	}
+	txHash, err := a.SignAndSubmit(tx)
+	log.Println("TrustAsset txid:", txHash)
+	return err
+}
+
+// tools function
 func GetResultCodeFromError(err error) string {
 	herr, isHorizonError := err.(*horizon.Error)
 	if isHorizonError {
