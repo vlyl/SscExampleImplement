@@ -1,13 +1,14 @@
 package MultisignatureEscrowAccount
 
 import (
+	"account"
 	"github.com/stellar/go/build"
 	"github.com/stellar/go/clients/horizon"
 	"log"
 )
 
 type DestinationAccount struct {
-	Account
+	account.Account
 }
 
 func (da *DestinationAccount) RetainFromEscrow(ea EscrowAccount) error {
@@ -18,7 +19,7 @@ func (da *DestinationAccount) RetainFromEscrow(ea EscrowAccount) error {
 		build.Payment(
 			build.Destination{da.Address()},
 			build.NativeAmount{fundingBalance}))
-	PanicIfError(err)
+	account.PanicIfError(err)
 
 	txHash, err := da.SignAndSubmit(tx)
 	log.Print(txHash)

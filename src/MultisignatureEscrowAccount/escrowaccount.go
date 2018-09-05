@@ -1,13 +1,14 @@
 package MultisignatureEscrowAccount
 
 import (
+	"account"
 	"github.com/stellar/go/build"
 	"log"
 	"time"
 )
 
 type EscrowAccount struct {
-	Account
+	account.Account
 }
 
 func (ea *EscrowAccount) AddSigner(da DestinationAccount, seq build.Sequence) {
@@ -51,7 +52,7 @@ func (ea *EscrowAccount) UnlockPreBuild(tm uint64, seq build.Sequence) (tx *buil
 		build.SetOptions(build.MasterWeight(0), build.SetThresholds(1, 1, 1)),
 		build.MemoText{"Unlock Pre Build"},
 	)
-	PanicIfError(err)
+	account.PanicIfError(err)
 	return
 }
 
@@ -66,6 +67,6 @@ func (ea *EscrowAccount) RecoveryPreBuild(da DestinationAccount, seq build.Seque
 			build.SetThresholds(1, 1, 1),
 		),
 	)
-	PanicIfError(err)
+	account.PanicIfError(err)
 	return
 }

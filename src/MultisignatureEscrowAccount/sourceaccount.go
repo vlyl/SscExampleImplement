@@ -1,6 +1,7 @@
 package MultisignatureEscrowAccount
 
 import (
+	"account"
 	"github.com/stellar/go/build"
 	"github.com/stellar/go/keypair"
 	"log"
@@ -9,7 +10,7 @@ import (
 const fundingBalance string = "100"
 
 type SourceAccount struct {
-	Account
+	account.Account
 }
 
 func (sa *SourceAccount) CreateEscrowAccount(startingBalance string, seq build.Sequence) (ea EscrowAccount) {
@@ -40,7 +41,7 @@ func (sa *SourceAccount) CreateEscrowAccount(startingBalance string, seq build.S
 		return
 	}
 
-	return EscrowAccount{NewAccount(full.Seed())}
+	return EscrowAccount{account.NewAccount(full.Seed())}
 }
 
 func (sa *SourceAccount) Funding(ea EscrowAccount, seq build.Sequence) {
@@ -51,9 +52,9 @@ func (sa *SourceAccount) Funding(ea EscrowAccount, seq build.Sequence) {
 		build.Payment(build.Destination{ea.Address()}, build.NativeAmount{fundingBalance}),
 		build.MemoText{"funding escrow"},
 	)
-	PanicIfError(err)
+	account.PanicIfError(err)
 
 	txHash, err := sa.SignAndSubmit(tx)
-	PanicIfError(err)
+	account.PanicIfError(err)
 	log.Println("txid:", txHash)
 }

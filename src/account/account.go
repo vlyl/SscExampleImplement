@@ -1,4 +1,4 @@
-package MultisignatureEscrowAccount
+package account
 
 import (
 	"fmt"
