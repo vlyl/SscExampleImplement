@@ -3,7 +3,10 @@ package JointEntityCrowdfunding
 import (
 	"account"
 	"github.com/stellar/go/build"
+	"github.com/stellar/go/clients/horizon"
+	"log"
 	"testing"
+	"time"
 )
 
 func TestJointEntityCrowdfunding(t *testing.T) {
@@ -20,20 +23,21 @@ func TestJointEntityCrowdfunding(t *testing.T) {
 
 	seqM := account.SequenceIncrement(A.GetSequence())
 	// tx1: create holding account
-	ha, err := A.CreateNewAccount("10", seqM)
+	a, err := A.CreateNewAccount("10", seqM)
 	if err != nil {
 		t.Error(err)
 	}
 
+	ha := HoldingAccount{Account: a}
 	seqN := account.SequenceIncrement(ha.GetSequence())
 	// tx2: remove holding account from itself signer, add A and B as holding account singer
-	err = HoldingAccount{Account: ha}.RemoveSelfAddSigners(seqN, A.Address(), B.Address())
+	err = ha.RemoveSelfAddSigners(seqN, A.Address(), B.Address())
 	if err != nil {
 		t.Error(err)
 	}
 
 	// tx3: begin crowd funding
-	err = HoldingAccount{Account: ha}.CrowdFunding(account.SequenceIncrement(seqN), A.Address(), B.Address())
+	err = ha.CrowdFunding(account.SequenceIncrement(seqN), A.Seed, B.Seed)
 	if err != nil {
 		t.Error(err)
 	}
@@ -41,6 +45,45 @@ func TestJointEntityCrowdfunding(t *testing.T) {
 	err = C.TrustAsset(build.Asset{Code: "IMF", Issuer: ha.Address(), Native: false})
 	if err != nil {
 		t.Error(err)
+	}
+
+	err = D.TrustAsset(build.Asset{Code: "IMF", Issuer: ha.Address(), Native: false})
+	if err != nil {
+		t.Error(err)
+	}
+
+	// account C buy IMF from holding account by XLM
+	func() {
+		tx, err := build.Transaction(
+			build.SourceAccount{AddressOrSeed: C.Address()},
+			build.AutoSequence{SequenceProvider: horizon.DefaultTestNetClient},
+			build.TestNetwork,
+			build.CreateOffer(build.Rate{
+				Selling: build.NativeAsset(),
+				Buying:  build.Asset{Code: "IMF", Issuer: ha.Address()},
+				Price:   "1",
+			},
+				build.Amount("100")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		txHash, err := C.SignAndSubmit(tx)
+		log.Println("buy crowd funding token txid: ", txHash)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}()
+
+	err = ha.PayAsset(build.Destination{AddressOrSeed: D.Address()},
+		build.Asset{Code: "IMF", Issuer: ha.Address()},
+		build.Amount("100"),
+		account.SequenceIncrement(account.SequenceIncrement(seqN)),
+		uint64(time.Now().Add(time.Minute).Unix()))
+	if err != nil {
+		t.Error()
 	}
 
 }

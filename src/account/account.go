@@ -10,24 +10,24 @@ import (
 )
 
 type Account struct {
-	seed string
+	Seed string
 }
 
 func NewAccount(seed string) (a Account) {
-	return Account{seed: seed}
+	return Account{Seed: seed}
 }
 
 func (a *Account) Address() string {
-	kp, err := keypair.Parse(a.seed)
+	kp, err := keypair.Parse(a.Seed)
 	PanicIfError(err)
 	return kp.Address()
 }
 func (a *Account) SignMessage(input []byte) []byte {
-	if len(a.seed) == 0 {
+	if len(a.Seed) == 0 {
 		return nil
 	}
 
-	kp, err := keypair.Parse(a.seed)
+	kp, err := keypair.Parse(a.Seed)
 	PanicIfError(err)
 
 	signature, err := kp.Sign(input)
@@ -36,13 +36,13 @@ func (a *Account) SignMessage(input []byte) []byte {
 }
 
 func (a *Account) SignTx(tx *build.TransactionBuilder) (txe build.TransactionEnvelopeBuilder) {
-	txe, err := tx.Sign(a.seed)
+	txe, err := tx.Sign(a.Seed)
 	PanicIfError(err)
 	return
 }
 
 func (a *Account) SignTxe(txe *build.TransactionEnvelopeBuilder) {
-	txe.Mutate(build.Sign{Seed: a.seed})
+	txe.Mutate(build.Sign{Seed: a.Seed})
 }
 
 func SubmitTxe(txe build.TransactionEnvelopeBuilder) (txHash string, err error) {
@@ -98,7 +98,7 @@ func (a *Account) CreateNewAccount(startingBalance string, seq build.Sequence) (
 			build.Destination{AddressOrSeed: full.Address()},
 			build.NativeAmount{Amount: startingBalance},
 		),
-		build.MemoText{Value: "Create escrow"},
+		build.MemoText{Value: "Create new "},
 	)
 	if err != nil {
 		log.Print(err)
